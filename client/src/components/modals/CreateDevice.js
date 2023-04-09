@@ -75,7 +75,7 @@ const CreateDevice = observer(({show, onHide}) => {
                         <Dropdown.Menu>
                             {device.brands.map(brand =>
                                 <Dropdown.Item
-                                    onClick={() => device.setSelectedBrand(brand )}
+                                    onClick={() => device.setSelectedBrand(brand)}
                                     key={brand.id}
                                 >
                                     {brand.name}

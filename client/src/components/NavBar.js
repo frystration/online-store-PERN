@@ -1,10 +1,9 @@
 import React, {useContext} from 'react';
 import {Context} from "../index";
 import {Button, Container, Nav, Navbar} from "react-bootstrap";
-import {ADMIN_ROUTE, LOGIN_ROUTE, SHOP_ROUTE} from "../utils/consts";
+import {ADMIN_ROUTE, BASKET_ROUTE, LOGIN_ROUTE, SHOP_ROUTE} from "../utils/consts";
 import {observer} from "mobx-react-lite";
 import {NavLink, useNavigate} from "react-router-dom";
-
 
 const NavBar = observer(() => {
     const {user} = useContext(Context)
@@ -21,6 +20,13 @@ const NavBar = observer(() => {
                 <NavLink style={{color: "white", textDecoration: "none"}} to={SHOP_ROUTE}>Купи девайс</NavLink>
                 {user.isAuth ?
                     <Nav className="ms-auto" style={{color: "white"}}>
+                        <Button
+                            variant={"outline-light"}
+                            onClick={() => navigate(BASKET_ROUTE)}
+                            className="me-4"
+                        >
+                            Корзина
+                        </Button>
                         <Button
                             variant={"outline-light"}
                             onClick={() => navigate(ADMIN_ROUTE)}

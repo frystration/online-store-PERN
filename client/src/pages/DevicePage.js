@@ -1,17 +1,45 @@
-import React, {useEffect, useState} from 'react';
-import {Button, Card, Col, Container, Form, Image, Row} from "react-bootstrap";
+import React, {useContext, useEffect, useState} from 'react';
+import {Button, Card, Col, Container, Dropdown, Form, Image, Row} from "react-bootstrap";
 import bigStar from "../assets/bigStar.png"
 import {fetchOneDevice} from "../http/deviceAPI";
 import {useParams} from "react-router-dom";
-import data from "bootstrap/js/src/dom/data";
+import {createBasketDevice} from "../http/basketAPI";
+import {checkIsRate, createRate} from "../http/rateApi";
+import {observer} from "mobx-react-lite";
+import {Context} from "../index";
 
-const DevicePage = () => {
+const rateList = [1, 2, 3, 4, 5]
+
+const DevicePage = observer(() => {
+    const {user} = useContext(Context)
     const [device, setDevice] = useState({info: []})
     const {id} = useParams()
 
+    const [selectedRate, setSelectedRate] = useState(5)
+    const [isRate, setIsRate] = useState(true)
+    const isAuth = user.isAuth
+
     useEffect(() => {
         fetchOneDevice(id).then(data => setDevice(data))
-    }, [])
+        if (isAuth) {
+            setIsRate(false)
+            checkIsRate(id).then(data => {
+                    if (data.id) {
+                        setIsRate(true)
+                    }
+                }
+            )
+        }
+    }, [id, selectedRate, isAuth, isRate])
+
+    const addToBasket = () => {
+        createBasketDevice({deviceId: id}).then()
+    }
+
+    const addRate = (rate) => {
+        setSelectedRate(rate)
+        createRate({deviceId: id, rate}).then(data => console.log(data))
+    }
 
     return (
         <Container className="mt-3">
@@ -34,6 +62,21 @@ const DevicePage = () => {
                         >
                             {device.rating}
                         </div>
+                        {!isRate && <div>
+                            <Dropdown className="mt-2 mb-2">
+                                <Dropdown.Toggle>{selectedRate || "Поставьте оценку"}</Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    {rateList.map(rate =>
+                                        <Dropdown.Item
+                                            onClick={() => addRate(rate)}
+                                            key={rate}
+                                        >
+                                            {rate}
+                                        </Dropdown.Item>
+                                    )}
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        </div>}
                     </Form>
                 </Col>
                 <Col md={4}>
@@ -42,7 +85,7 @@ const DevicePage = () => {
                         style={{width: 300, height: 300, fontSize: 32, border: "5px solid lightgray"}}
                     >
                         <h3>{device.price}</h3>
-                        <Button variant={"outline-dark"}>Добавить в корзину</Button>
+                        <Button variant={"outline-dark"} onClick={() => addToBasket()}>Добавить в корзину</Button>
                     </Card>
                 </Col>
             </Row>
@@ -56,6 +99,6 @@ const DevicePage = () => {
             </Row>
         </Container>
     );
-};
+});
 
 export default DevicePage;

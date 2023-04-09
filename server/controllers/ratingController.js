@@ -1,23 +1,40 @@
 const ApiError = require('../error/ApiError');
-const {Rating} = require("../models/models");
+const {Rating, Device} = require("../models/models");
+const {getAverage} = require("../utils/getAvarage");
 
 
 class RatingController {
     async create(req, res, next) {
         try {
-            let {userId, deviceId, rate} = req.body
-            const rating = await Rating.create({userId, deviceId, rate})
+            let {deviceId, rate} = req.body
+
+            await Rating.create({userId: req.user.id, deviceId, rate})
+
+            const ratingByDeviceId = await Rating.findAll({where: {deviceId}})
+
+            const rating = getAverage(ratingByDeviceId)
+
+            await Device.update({rating: rating},
+                {
+                    where: {id: deviceId}
+                }
+            );
             return res.json(rating)
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
     }
 
-    async getAll(req, res, next) {
+    async check(req, res, next) {
         try {
-            let {deviceId} = req.body
-            const rating = await Rating.findAll({where: {deviceId}})
-            return res.json(rating)
+            let {deviceId} = req.query
+            const isRate = await Rating.findOne(
+                {
+                    where: {userId: req.user.id, deviceId}
+                }
+            )
+
+            return res.json(isRate)
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
